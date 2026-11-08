@@ -119,10 +119,10 @@ h1 {
   overflow: hidden;
 }
 
-/* Front: landscape A5 (210×148mm → 636×449px) */
+/* Front: portrait A5 (148×210mm → 450×637px) */
 .card-front {
-  width: 636px;
-  height: 449px;
+  width: 450px;
+  height: 637px;
   background: #F8F4EE;
 }
 
@@ -133,30 +133,21 @@ h1 {
   background: #F9F6F1;
 }
 
-/* ── FRONT: flower bouquet (centered, full height) ── */
-.front-flowers {
+/* ── FRONT: flower stems (centered column) ── */
+.front-stems {
   position: absolute;
+  left: 50%;
   top: 50%;
-  left: 50%;
   transform: translate(-50%, -50%);
-  height: 100%;
-  width: auto;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.92;
-}
-
-/* ── FRONT: meadow strip at bottom ── */
-.front-meadow {
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 108%;
-  height: auto;
-  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   z-index: 2;
-  opacity: 0.65;
+}
+.front-stem-img {
+  height: 72px;
+  width: auto;
 }
 
 /* ── BACK: flower frame (full cover) ── */
@@ -172,34 +163,27 @@ h1 {
 /* ── FRONT: "Będzie ślub!" ── */
 .front-script {
   font-family: 'Great Vibes', cursive;
-  font-size: 58px;
+  font-size: 54px;
   color: #D97090;
   position: absolute;
-  left: 10px;
+  left: 15px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) rotate(-8deg);
   line-height: 1.12;
-  width: 190px;
-  text-align: left;
+  width: 145px;
+  text-align: center;
   z-index: 4;
-  text-shadow:
-    0 0 12px rgba(248,244,238,1),
-    0 0 24px rgba(248,244,238,1),
-    0 0 36px rgba(248,244,238,0.8);
 }
 
-/* ── FRONT CALENDAR (vertical strip, right side) ── */
+/* ── FRONT CALENDAR (rotated 90°, right side) ── */
 .cal-container {
   position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 310px;
+  top: 220px;
+  transform: rotate(90deg);
+  transform-origin: center center;
   font-family: 'Cormorant Garamond', serif;
   z-index: 4;
-  background: rgba(248,244,238,0.72);
-  border-radius: 6px;
-  padding: 6px 4px;
-  backdrop-filter: blur(2px);
 }
 .cal-container table { border-collapse: collapse; }
 .cal-container td {
@@ -245,7 +229,7 @@ h1 {
 .back-content {
   position: absolute;
   left: 60px; right: 60px;
-  top: 75px; bottom: 275px;
+  top: 115px; bottom: 235px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -348,6 +332,9 @@ h1 {
 <body>
 
 <h1>Edytor Zaproszenia Ślubnego</h1>
+<div style="text-align:center;margin-bottom:16px;">
+  <a href="photos.html" style="font-family:'Raleway',sans-serif;font-size:0.8rem;color:#9B7CB8;text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;">Zdjęcia →</a>
+</div>
 
 <div class="editor">
   <div class="editor-heading">Dane</div>
@@ -403,48 +390,51 @@ h1 {
     <div class="card-label">Przód</div>
     <div class="card card-front" id="front">
 
-      <!-- Main flower bouquet, centred -->
-      <img src="flowers_set_large.png" class="front-flowers" alt="">
-
-      <!-- Meadow strip along bottom -->
-      <img src="flowers_corner.png" class="front-meadow" alt="">
-
       <!-- "Będzie ślub!" -->
       <div class="front-script">Będzie<br>ślub!</div>
 
-      <!-- Calendar — vertical strip on right -->
+      <!-- Individual flower stems, centered column -->
+      <div class="front-stems">
+        <img src="Lavandula_angustifolia.svg" class="front-stem-img" alt="">
+        <img src="Chamomile.svg" class="front-stem-img" alt="">
+        <img src="Poppy_vector.svg" class="front-stem-img" alt="">
+        <img src="Centaurea_cyanus.svg" class="front-stem-img" alt="">
+        <img src="Colored_daisy_icon.svg" class="front-stem-img" alt="">
+      </div>
+
+      <!-- Calendar — rotated 90°, right side -->
       <div class="cal-container">
         <table>
-          <tr>
-            <td class="cal-day-name" id="dn3">wt</td>
-            <td id="d3">20</td>
+          <tr class="cal-month-row">
+            <td colspan="2" id="cal-month">MAJ</td>
           </tr>
           <tr>
-            <td class="cal-day-name" id="dn2">pon</td>
-            <td id="d2">19</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name" id="dn1">niedz</td>
-            <td id="d1">18</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name">sob</td>
-            <td class="cal-hl" id="d0" style="position:relative">17</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name" id="dn-1">pt</td>
-            <td id="d-1">16</td>
+            <td class="cal-day-name" id="dn-3">śr</td>
+            <td id="d-3">14</td>
           </tr>
           <tr>
             <td class="cal-day-name" id="dn-2">czw</td>
             <td id="d-2">15</td>
           </tr>
           <tr>
-            <td class="cal-day-name" id="dn-3">śr</td>
-            <td id="d-3">14</td>
+            <td class="cal-day-name" id="dn-1">pt</td>
+            <td id="d-1">16</td>
           </tr>
-          <tr class="cal-month-row">
-            <td colspan="2" id="cal-month">MAJ</td>
+          <tr>
+            <td class="cal-day-name">sob</td>
+            <td class="cal-hl" id="d0" style="position:relative">17</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name" id="dn1">niedz</td>
+            <td id="d1">18</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name" id="dn2">pon</td>
+            <td id="d2">19</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name" id="dn3">wt</td>
+            <td id="d3">20</td>
           </tr>
         </table>
       </div>
