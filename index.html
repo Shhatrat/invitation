@@ -330,8 +330,6 @@ h1 {
     <input id="day" value="17" oninput="update()"></div>
   <div class="field"><label>Miesiąc (słownie, np. maja)</label>
     <input id="month" value="maja" oninput="update()"></div>
-  <div class="field"><label>Miesiąc na kalendarzu (np. MAJ)</label>
-    <input id="monthCal" value="MAJ" oninput="update()"></div>
   <div class="field"><label>Rok</label>
     <input id="year" value="2027" oninput="update()"></div>
   <div class="field"><label>Godzina</label>
@@ -380,7 +378,7 @@ h1 {
             <td class="cal-day-name" id="dn-3">śr</td>
             <td class="cal-day-name" id="dn-2">czw</td>
             <td class="cal-day-name" id="dn-1">pt</td>
-            <td class="cal-day-name">sob</td>
+            <td class="cal-day-name" id="dn0">sob</td>
             <td class="cal-day-name" id="dn1">niedz</td>
             <td class="cal-day-name" id="dn2">pon</td>
             <td class="cal-day-name" id="dn3">wt</td>
@@ -462,6 +460,8 @@ function updateQR(id, url) {
 const DAY_ABBR = ['niedz','pon','wt','śr','czw','pt','sob'];
 const MONTHS = {'stycznia':0,'lutego':1,'marca':2,'kwietnia':3,'maja':4,'czerwca':5,
   'lipca':6,'sierpnia':7,'września':8,'października':9,'listopada':10,'grudnia':11};
+const MONTH_NAMES = ['STYCZEŃ','LUTY','MARZEC','KWIECIEŃ','MAJ','CZERWIEC',
+  'LIPIEC','SIERPIEŃ','WRZESIEŃ','PAŹDZIERNIK','LISTOPAD','GRUDZIEŃ'];
 
 function computeWeek(day, monthStr, year) {
   const m = MONTHS[monthStr.toLowerCase()];
@@ -480,7 +480,6 @@ function update() {
   const guests   = document.getElementById('guests').value;
   const day      = document.getElementById('day').value;
   const month    = document.getElementById('month').value;
-  const monthCal = document.getElementById('monthCal').value;
   const year     = document.getElementById('year').value;
   const hour     = document.getElementById('hour').value;
   const venue    = document.getElementById('venue').value;
@@ -505,7 +504,10 @@ function update() {
   updateQR('qr1', document.getElementById('qr1url').value);
   updateQR('qr2', document.getElementById('qr2url').value);
 
-  document.getElementById('cal-month').textContent = monthCal;
+  const monthIdx = MONTHS[month.toLowerCase()];
+  if (monthIdx !== undefined) {
+    document.getElementById('cal-month').textContent = MONTH_NAMES[monthIdx];
+  }
 
   const week = computeWeek(day, month, year);
   if (week) {
@@ -516,6 +518,7 @@ function update() {
     document.getElementById('d-1').textContent = week[2].num;
     document.getElementById('dn-1').textContent = week[2].dayName;
     document.getElementById('d0').textContent  = week[3].num;
+    document.getElementById('dn0').textContent = week[3].dayName;
     document.getElementById('d1').textContent  = week[4].num;
     document.getElementById('dn1').textContent = week[4].dayName;
     document.getElementById('d2').textContent  = week[5].num;
