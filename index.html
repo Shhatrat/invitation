@@ -133,21 +133,15 @@ h1 {
   background: #F9F6F1;
 }
 
-/* ── FRONT: flower stems (centered column) ── */
-.front-stems {
+/* ── FRONT: "Będzie ślub!" title ── */
+.front-title {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  width: 70%;
+  height: auto;
   z-index: 2;
-}
-.front-stem-img {
-  height: 72px;
-  width: auto;
 }
 
 /* ── BACK: flower frame (full cover) ── */
@@ -158,71 +152,6 @@ h1 {
   object-fit: fill;
   pointer-events: none;
   z-index: 1;
-}
-
-/* ── FRONT: "Będzie ślub!" ── */
-.front-script {
-  font-family: 'Great Vibes', cursive;
-  font-size: 54px;
-  color: #D97090;
-  position: absolute;
-  left: 15px;
-  top: 50%;
-  transform: translateY(-50%) rotate(-8deg);
-  line-height: 1.12;
-  width: 145px;
-  text-align: center;
-  z-index: 4;
-}
-
-/* ── FRONT CALENDAR (rotated 90°, right side) ── */
-.cal-container {
-  position: absolute;
-  left: 310px;
-  top: 220px;
-  transform: rotate(90deg);
-  transform-origin: center center;
-  font-family: 'Cormorant Garamond', serif;
-  z-index: 4;
-}
-.cal-container table { border-collapse: collapse; }
-.cal-container td {
-  padding: 2px 4px 2px 2px;
-  font-size: 14px;
-  text-align: right;
-  color: #aaa;
-  line-height: 1.4;
-}
-.cal-container td.cal-day-name {
-  font-size: 11px;
-  color: #ccc;
-  text-align: left;
-  padding-right: 8px;
-  min-width: 36px;
-}
-.cal-month-row td {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  color: #9B7CB8;
-  text-align: right;
-  padding-top: 5px;
-}
-.cal-hl {
-  color: #E8829A !important;
-  font-weight: 600;
-  position: relative;
-}
-.cal-hl::before {
-  content: '♡';
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 26px;
-  color: #E8829A;
-  opacity: 0.55;
-  line-height: 1;
-  pointer-events: none;
 }
 
 /* ── BACK text styles ── */
@@ -351,8 +280,6 @@ h1 {
     <input id="day" value="17" oninput="update()"></div>
   <div class="field"><label>Miesiąc (słownie, np. maja)</label>
     <input id="month" value="maja" oninput="update()"></div>
-  <div class="field"><label>Miesiąc na kalendarzu (np. MAJ)</label>
-    <input id="monthCal" value="MAJ" oninput="update()"></div>
   <div class="field"><label>Rok</label>
     <input id="year" value="2027" oninput="update()"></div>
   <div class="field"><label>Godzina</label>
@@ -389,56 +316,7 @@ h1 {
   <div class="card-wrapper">
     <div class="card-label">Przód</div>
     <div class="card card-front" id="front">
-
-      <!-- "Będzie ślub!" -->
-      <div class="front-script">Będzie<br>ślub!</div>
-
-      <!-- Individual flower stems, centered column -->
-      <div class="front-stems">
-        <img src="Lavandula_angustifolia.svg" class="front-stem-img" alt="">
-        <img src="Chamomile.svg" class="front-stem-img" alt="">
-        <img src="Poppy_vector.svg" class="front-stem-img" alt="">
-        <img src="Centaurea_cyanus.svg" class="front-stem-img" alt="">
-        <img src="Colored_daisy_icon.svg" class="front-stem-img" alt="">
-      </div>
-
-      <!-- Calendar — rotated 90°, right side -->
-      <div class="cal-container">
-        <table>
-          <tr class="cal-month-row">
-            <td colspan="2" id="cal-month">MAJ</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name" id="dn-3">śr</td>
-            <td id="d-3">14</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name" id="dn-2">czw</td>
-            <td id="d-2">15</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name" id="dn-1">pt</td>
-            <td id="d-1">16</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name">sob</td>
-            <td class="cal-hl" id="d0" style="position:relative">17</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name" id="dn1">niedz</td>
-            <td id="d1">18</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name" id="dn2">pon</td>
-            <td id="d2">19</td>
-          </tr>
-          <tr>
-            <td class="cal-day-name" id="dn3">wt</td>
-            <td id="d3">20</td>
-          </tr>
-        </table>
-      </div>
-
+      <img src="bedzie_slub.svg" class="front-title" alt="Będzie ślub!">
     </div><!-- /front -->
   </div><!-- /front wrapper -->
 
@@ -502,28 +380,12 @@ function updateQR(id, url) {
   }
 }
 
-const DAY_ABBR = ['niedz','pon','wt','śr','czw','pt','sob'];
-const MONTHS = {'stycznia':0,'lutego':1,'marca':2,'kwietnia':3,'maja':4,'czerwca':5,
-  'lipca':6,'sierpnia':7,'września':8,'października':9,'listopada':10,'grudnia':11};
-
-function computeWeek(day, monthStr, year) {
-  const m = MONTHS[monthStr.toLowerCase()];
-  if (m === undefined || !day || !year) return null;
-  const result = [];
-  for (let offset = 3; offset >= -3; offset--) {
-    const d = new Date(parseInt(year), m, parseInt(day) + offset);
-    result.push({ num: d.getDate(), dayName: DAY_ABBR[d.getDay()], isWedding: offset === 0 });
-  }
-  return result; // [0]=d+3 (top), [6]=d-3 (bottom)
-}
-
 function update() {
   const p1       = document.getElementById('p1').value.toUpperCase();
   const p2       = document.getElementById('p2').value.toUpperCase();
   const guests   = document.getElementById('guests').value;
   const day      = document.getElementById('day').value;
   const month    = document.getElementById('month').value;
-  const monthCal = document.getElementById('monthCal').value;
   const year     = document.getElementById('year').value;
   const hour     = document.getElementById('hour').value;
   const venue    = document.getElementById('venue').value;
@@ -547,34 +409,6 @@ function update() {
 
   updateQR('qr1', document.getElementById('qr1url').value);
   updateQR('qr2', document.getElementById('qr2url').value);
-
-  document.getElementById('cal-month').textContent = monthCal;
-
-  const week = computeWeek(day, month, year);
-  if (week) {
-    document.getElementById('d3').textContent  = week[0].num;
-    document.getElementById('dn3').textContent = week[0].dayName;
-    document.getElementById('d2').textContent  = week[1].num;
-    document.getElementById('dn2').textContent = week[1].dayName;
-    document.getElementById('d1').textContent  = week[2].num;
-    document.getElementById('dn1').textContent = week[2].dayName;
-    document.getElementById('d0').textContent  = week[3].num;
-    document.getElementById('d-1').textContent = week[4].num;
-    document.getElementById('dn-1').textContent = week[4].dayName;
-    document.getElementById('d-2').textContent = week[5].num;
-    document.getElementById('dn-2').textContent = week[5].dayName;
-    document.getElementById('d-3').textContent = week[6].num;
-    document.getElementById('dn-3').textContent = week[6].dayName;
-  } else {
-    const d = parseInt(day) || 17;
-    document.getElementById('d3').textContent  = d + 3;
-    document.getElementById('d2').textContent  = d + 2;
-    document.getElementById('d1').textContent  = d + 1;
-    document.getElementById('d0').textContent  = d;
-    document.getElementById('d-1').textContent = d - 1;
-    document.getElementById('d-2').textContent = d - 2;
-    document.getElementById('d-3').textContent = d - 3;
-  }
 }
 
 update();
