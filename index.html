@@ -67,7 +67,7 @@ h1 {
   letter-spacing: 0.08em;
   font-weight: 400;
 }
-.field input, .field select {
+.field input, .field select, .field textarea {
   border: 1px solid #e0d8ea;
   border-radius: 7px;
   padding: 9px 13px;
@@ -77,8 +77,10 @@ h1 {
   outline: none;
   transition: border-color 0.2s;
   background: #fdfaff;
+  resize: vertical;
 }
-.field input:focus, .field select:focus { border-color: #E8829A; background: white; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: #E8829A; background: white; }
+.field textarea { min-height: 90px; font-family: inherit; }
 
 .btn-print {
   grid-column: 1/-1;
@@ -310,12 +312,45 @@ h1 {
   text-transform: uppercase;
 }
 
-/* ── PRINT ── */
+/* ── PRINT STAGE (dynamically filled before window.print) ── */
+.print-stage { display: none; }
+
+/* ── PRINT: A3 portrait, 4 kartki A5 w układzie 2×2 ── */
 @media print {
-  body { background: white; padding: 0; }
-  .editor, h1, .card-label { display: none; }
-  .cards { gap: 0; flex-direction: column; align-items: center; }
-  .card { box-shadow: none; page-break-after: always; }
+  @page { size: 297mm 420mm; margin: 0; }
+  body { background: white; margin: 0; padding: 0; }
+  body > * { display: none !important; }
+  body > .print-stage { display: block !important; }
+
+  .print-page {
+    width: 297mm;
+    height: 420mm;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    background: white;
+  }
+  .print-page .slot {
+    position: absolute;
+    width: 148mm;
+    height: 210mm;
+    overflow: hidden;
+  }
+  .print-page .slot .card {
+    width: 450px !important;
+    height: 637px !important;
+    transform: scale(1.243);
+    transform-origin: top left;
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+  .slot-tl { top: 0;     left: 0.5mm; }
+  .slot-tr { top: 0;     right: 0.5mm; }
+  .slot-bl { top: 210mm; left: 0.5mm; }
+  .slot-br { top: 210mm; right: 0.5mm; }
+  /* cienkie linie cięcia pośrodku */
+  .cut-h { position: absolute; left: 0; right: 0; top: 210mm; height: 0.15mm; background: #bbb; }
+  .cut-v { position: absolute; top: 0; bottom: 0; left: 148.5mm; width: 0.15mm; background: #bbb; }
 }
 </style>
 </head>
@@ -334,8 +369,10 @@ h1 {
   <div class="field"><label>Imię i nazwisko — osoba 2</label>
     <input id="p2" value="Jakub Kowalski" oninput="update()"></div>
 
-  <div class="field full"><label>Imiona gości</label>
-    <input id="guests" value="Kasię i Tomka Nowaków" oninput="update()"></div>
+  <div class="field full"><label>Lista gości (jedna osoba/para na linię — podgląd pokazuje pierwszą)</label>
+    <textarea id="guests" oninput="update()">Kasię i Tomka Nowaków
+Anię i Marka Kowalskich
+Babcię Zosię</textarea></div>
 
   <div class="field"><label>Dzień ślubu (liczba)</label>
     <input id="day" value="17" oninput="update()"></div>
@@ -365,8 +402,10 @@ h1 {
   <div class="field full"><label>Link QR — Sala</label>
     <input id="qr2url" value="https://maps.google.com/?q=sala" oninput="update()"></div>
 
-  <button class="btn-print" onclick="window.print()">Drukuj</button>
+  <button class="btn-print" onclick="exportPrint()">Eksportuj do PDF (A5 + 3mm spad)</button>
 </div>
+
+<div id="print-stage" class="print-stage"></div>
 
 <!-- ═══════════════════════════════════════════
      CARDS
@@ -489,7 +528,7 @@ function computeWeek(day, monthStr, year) {
 function update() {
   const p1       = document.getElementById('p1').value.toUpperCase();
   const p2       = document.getElementById('p2').value.toUpperCase();
-  const guests   = document.getElementById('guests').value;
+  const guests   = (document.getElementById('guests').value.split('\n').find(l => l.trim()) || '').trim();
   const day      = document.getElementById('day').value;
   const month    = document.getElementById('month').value;
   const year     = document.getElementById('year').value;
@@ -541,6 +580,68 @@ function update() {
 }
 
 update();
+
+const SLOTS = ['slot-tl', 'slot-tr', 'slot-bl', 'slot-br'];
+const CUTS = '<div class="cut-h"></div><div class="cut-v"></div>';
+
+function cleanClone(node, transform) {
+  const c = node.cloneNode(true);
+  if (transform) transform(c);
+  c.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  c.removeAttribute('id');
+  return c;
+}
+
+function makeSlot(cls, cardNode) {
+  const s = document.createElement('div');
+  s.className = 'slot ' + cls;
+  s.appendChild(cardNode);
+  return s;
+}
+
+function makeSheet(slots) {
+  const page = document.createElement('div');
+  page.className = 'print-page';
+  slots.forEach(s => page.appendChild(s));
+  page.insertAdjacentHTML('beforeend', CUTS);
+  return page;
+}
+
+function exportPrint() {
+  const guestList = document.getElementById('guests').value
+    .split('\n').map(l => l.trim()).filter(Boolean);
+  if (!guestList.length) { alert('Lista gości jest pusta'); return; }
+
+  const stage = document.getElementById('print-stage');
+  stage.innerHTML = '';
+  const front = document.getElementById('front');
+  const back  = document.getElementById('back');
+
+  // group guests by 4 per sheet
+  for (let i = 0; i < guestList.length; i += 4) {
+    const group = guestList.slice(i, i + 4);
+
+    // sheet N (front side): 4 identical fronts
+    const frontSlots = SLOTS.map(cls => makeSlot(cls, cleanClone(front)));
+    stage.appendChild(makeSheet(frontSlots));
+
+    // sheet N (back side): up to 4 unique backs
+    const backSlots = group.map((guest, idx) => {
+      const b = cleanClone(back, (el) => {
+        const gEl = el.querySelector('#back-guests');
+        if (gEl) gEl.textContent = guest;
+      });
+      return makeSlot(SLOTS[idx], b);
+    });
+    stage.appendChild(makeSheet(backSlots));
+  }
+
+  const sheets = Math.ceil(guestList.length / 4);
+  console.log(`Eksport: ${guestList.length} gości → ${sheets * 2} stron A3 (${sheets} fronty + ${sheets} tyły)`);
+
+  window.print();
+  setTimeout(() => { stage.innerHTML = ''; }, 1000);
+}
 </script>
 </body>
 </html>
