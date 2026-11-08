@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edytor Zaproszenia Ślubnego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Raleway:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Raleway', sans-serif;
+  background: #f2ede8;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 1.8rem;
+  color: #4A3F5C;
+  margin-bottom: 36px;
+  letter-spacing: 0.08em;
+}
+
+/* ── EDITOR ── */
+.editor {
+  max-width: 860px;
+  margin: 0 auto 48px;
+  background: white;
+  border-radius: 14px;
+  padding: 32px;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.07);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.editor-heading {
+  grid-column: 1/-1;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 1.1rem;
+  color: #9B7CB8;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0e8f4;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.field.full { grid-column: 1/-1; }
+.field label {
+  font-size: 0.7rem;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+.field input {
+  border: 1px solid #e0d8ea;
+  border-radius: 7px;
+  padding: 9px 13px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.88rem;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fdfaff;
+}
+.field input:focus { border-color: #E8829A; background: white; }
+
+.btn-print {
+  grid-column: 1/-1;
+  padding: 13px 30px;
+  background: #E8829A;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: background 0.2s;
+}
+.btn-print:hover { background: #d46e88; }
+
+/* ── CARDS WRAPPER ── */
+.cards {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.card-wrapper { text-align: center; }
+.card-label {
+  font-size: 0.72rem;
+  color: #bbb;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+/* ── CARD BASE ── */
+.card {
+  position: relative;
+  box-shadow: 0 6px 40px rgba(0,0,0,0.13);
+  overflow: hidden;
+}
+
+/* Front: landscape A5 (210×148mm → 636×449px) */
+.card-front {
+  width: 636px;
+  height: 449px;
+  background: #F8F4EE;
+}
+
+/* Back: portrait A5 (148×210mm → 450×637px) */
+.card-back {
+  width: 450px;
+  height: 637px;
+  background: #F9F6F1;
+}
+
+/* ── FRONT: flower bouquet (centered, full height) ── */
+.front-flowers {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 100%;
+  width: auto;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.92;
+}
+
+/* ── FRONT: meadow strip at bottom ── */
+.front-meadow {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 108%;
+  height: auto;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.65;
+}
+
+/* ── BACK: flower frame (full cover) ── */
+.card-bg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── FRONT: "Będzie ślub!" ── */
+.front-script {
+  font-family: 'Great Vibes', cursive;
+  font-size: 58px;
+  color: #D97090;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  line-height: 1.12;
+  width: 190px;
+  text-align: left;
+  z-index: 4;
+  text-shadow:
+    0 0 12px rgba(248,244,238,1),
+    0 0 24px rgba(248,244,238,1),
+    0 0 36px rgba(248,244,238,0.8);
+}
+
+/* ── FRONT CALENDAR (vertical strip, right side) ── */
+.cal-container {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Cormorant Garamond', serif;
+  z-index: 4;
+  background: rgba(248,244,238,0.72);
+  border-radius: 6px;
+  padding: 6px 4px;
+  backdrop-filter: blur(2px);
+}
+.cal-container table { border-collapse: collapse; }
+.cal-container td {
+  padding: 2px 4px 2px 2px;
+  font-size: 14px;
+  text-align: right;
+  color: #aaa;
+  line-height: 1.4;
+}
+.cal-container td.cal-day-name {
+  font-size: 11px;
+  color: #ccc;
+  text-align: left;
+  padding-right: 8px;
+  min-width: 36px;
+}
+.cal-month-row td {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: #9B7CB8;
+  text-align: right;
+  padding-top: 5px;
+}
+.cal-hl {
+  color: #E8829A !important;
+  font-weight: 600;
+  position: relative;
+}
+.cal-hl::before {
+  content: '♡';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  color: #E8829A;
+  opacity: 0.55;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ── BACK text styles ── */
+.back-content {
+  position: absolute;
+  left: 60px; right: 60px;
+  top: 75px; bottom: 275px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 2;
+}
+
+.back-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  color: #3A3050;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+.back-heart {
+  color: #E8829A;
+  font-size: 13px;
+  margin: 4px 0;
+}
+.back-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 12px;
+  color: #999;
+  margin: 10px 0 5px;
+  line-height: 1.6;
+}
+.back-guests {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 18px;
+  color: #C4824A;
+  letter-spacing: 0.04em;
+  margin: 2px 0 8px;
+}
+.back-invite {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 12px;
+  color: #888;
+  line-height: 1.7;
+  margin-bottom: 5px;
+}
+.back-date, .back-time, .back-venue {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: #E8829A;
+  line-height: 1.6;
+}
+
+.back-confirm {
+  position: absolute;
+  bottom: 85px;
+  left: 60px; right: 60px;
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 9.5px;
+  color: #9B7CB8;
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+  z-index: 2;
+}
+.back-qr-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 6px;
+}
+.back-qr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.back-qr-item canvas {
+  width: 54px !important;
+  height: 54px !important;
+}
+.back-qr-label {
+  font-size: 8px;
+  color: #9B7CB8;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── PRINT ── */
+@media print {
+  body { background: white; padding: 0; }
+  .editor, h1, .card-label { display: none; }
+  .cards { gap: 0; flex-direction: column; align-items: center; }
+  .card { box-shadow: none; page-break-after: always; }
+}
+</style>
+</head>
+<body>
+
+<h1>Edytor Zaproszenia Ślubnego</h1>
+
+<div class="editor">
+  <div class="editor-heading">Dane</div>
+
+  <div class="field"><label>Imię i nazwisko — osoba 1</label>
+    <input id="p1" value="Natalia Nowak" oninput="update()"></div>
+  <div class="field"><label>Imię i nazwisko — osoba 2</label>
+    <input id="p2" value="Jakub Kowalski" oninput="update()"></div>
+
+  <div class="field full"><label>Imiona gości</label>
+    <input id="guests" value="Kasię i Tomka Nowaków" oninput="update()"></div>
+
+  <div class="field"><label>Dzień ślubu (liczba)</label>
+    <input id="day" value="17" oninput="update()"></div>
+  <div class="field"><label>Miesiąc (słownie, np. maja)</label>
+    <input id="month" value="maja" oninput="update()"></div>
+  <div class="field"><label>Miesiąc na kalendarzu (np. MAJ)</label>
+    <input id="monthCal" value="MAJ" oninput="update()"></div>
+  <div class="field"><label>Rok</label>
+    <input id="year" value="2027" oninput="update()"></div>
+  <div class="field"><label>Godzina</label>
+    <input id="hour" value="14:00" oninput="update()"></div>
+
+  <div class="field full"><label>Miejsce (po „w ogrodzie")</label>
+    <input id="venue" value="Brzoskwinia" oninput="update()"></div>
+
+  <div class="field"><label>Potwierdzenie do (data)</label>
+    <input id="confirmBy" value="10 kwietnia" oninput="update()"></div>
+  <div class="field"><label>Telefon 1 — imię</label>
+    <input id="ph1n" value="Natalia" oninput="update()"></div>
+  <div class="field"><label>Telefon 1 — numer</label>
+    <input id="ph1" value="789 456 123" oninput="update()"></div>
+  <div class="field"><label>Telefon 2 — imię</label>
+    <input id="ph2n" value="Kuba" oninput="update()"></div>
+  <div class="field"><label>Telefon 2 — numer</label>
+    <input id="ph2" value="789 654 321" oninput="update()"></div>
+
+  <div class="field full"><label>Link QR — Kościół</label>
+    <input id="qr1url" value="https://maps.google.com/?q=kosciol" oninput="update()"></div>
+  <div class="field full"><label>Link QR — Sala</label>
+    <input id="qr2url" value="https://maps.google.com/?q=sala" oninput="update()"></div>
+
+  <button class="btn-print" onclick="window.print()">Drukuj</button>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CARDS
+═══════════════════════════════════════════ -->
+<div class="cards">
+
+  <!-- ──────── FRONT (landscape) ──────── -->
+  <div class="card-wrapper">
+    <div class="card-label">Przód</div>
+    <div class="card card-front" id="front">
+
+      <!-- Main flower bouquet, centred -->
+      <img src="flowers_set_large.png" class="front-flowers" alt="">
+
+      <!-- Meadow strip along bottom -->
+      <img src="flowers_corner.png" class="front-meadow" alt="">
+
+      <!-- "Będzie ślub!" -->
+      <div class="front-script">Będzie<br>ślub!</div>
+
+      <!-- Calendar — vertical strip on right -->
+      <div class="cal-container">
+        <table>
+          <tr>
+            <td class="cal-day-name" id="dn3">wt</td>
+            <td id="d3">20</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name" id="dn2">pon</td>
+            <td id="d2">19</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name" id="dn1">niedz</td>
+            <td id="d1">18</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name">sob</td>
+            <td class="cal-hl" id="d0" style="position:relative">17</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name" id="dn-1">pt</td>
+            <td id="d-1">16</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name" id="dn-2">czw</td>
+            <td id="d-2">15</td>
+          </tr>
+          <tr>
+            <td class="cal-day-name" id="dn-3">śr</td>
+            <td id="d-3">14</td>
+          </tr>
+          <tr class="cal-month-row">
+            <td colspan="2" id="cal-month">MAJ</td>
+          </tr>
+        </table>
+      </div>
+
+    </div><!-- /front -->
+  </div><!-- /front wrapper -->
+
+
+  <!-- ──────── BACK (portrait) ──────── -->
+  <div class="card-wrapper">
+    <div class="card-label">Tył</div>
+    <div class="card card-back" id="back">
+
+      <!-- Wildflower frame (transparent centre) -->
+      <img src="border_frame_large.png" class="card-bg" alt="">
+
+      <!-- Main invitation text -->
+      <div class="back-content">
+        <div class="back-name" id="back-p1">NATALIA NOWAK</div>
+        <div class="back-heart">♥</div>
+        <div class="back-name" id="back-p2">JAKUB KOWALSKI</div>
+        <div class="back-subtitle">serdecznie zapraszają</div>
+        <div class="back-guests" id="back-guests">Kasię i Tomka Nowaków</div>
+        <div class="back-invite">Na uroczystość ślubną oraz przyjęcie,<br>które odbędą się</div>
+        <div class="back-date" id="back-date">w dniu 17 maja 2027</div>
+        <div class="back-time" id="back-time">o godzinie 14:00</div>
+        <div class="back-venue" id="back-venue">w ogrodzie Brzoskwinia</div>
+      </div>
+
+      <!-- Confirmation at bottom -->
+      <div class="back-confirm" id="back-confirm">
+        Prosimy o potwierdzenie przybycia do <span id="back-confirmBy">10 kwietnia</span><br>
+        <span id="back-ph1n">Natalia</span> <span id="back-ph1">789 456 123</span><br>
+        <span id="back-ph2n">Kuba</span> <span id="back-ph2">789 654 321</span>
+        <div class="back-qr-row">
+          <div class="back-qr-item">
+            <div id="qr1"></div>
+            <div class="back-qr-label">Kościół</div>
+          </div>
+          <div class="back-qr-item">
+            <div id="qr2"></div>
+            <div class="back-qr-label">Sala</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /back -->
+  </div><!-- /back wrapper -->
+
+</div><!-- /cards -->
+
+<script>
+const qrInstances = {};
+function updateQR(id, url) {
+  const el = document.getElementById(id);
+  if (qrInstances[id]) {
+    qrInstances[id].clear();
+    qrInstances[id].makeCode(url);
+  } else {
+    qrInstances[id] = new QRCode(el, {
+      text: url, width: 54, height: 54,
+      colorDark: '#9B7CB8', colorLight: '#F9F6F1',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+}
+
+const DAY_ABBR = ['niedz','pon','wt','śr','czw','pt','sob'];
+const MONTHS = {'stycznia':0,'lutego':1,'marca':2,'kwietnia':3,'maja':4,'czerwca':5,
+  'lipca':6,'sierpnia':7,'września':8,'października':9,'listopada':10,'grudnia':11};
+
+function computeWeek(day, monthStr, year) {
+  const m = MONTHS[monthStr.toLowerCase()];
+  if (m === undefined || !day || !year) return null;
+  const result = [];
+  for (let offset = 3; offset >= -3; offset--) {
+    const d = new Date(parseInt(year), m, parseInt(day) + offset);
+    result.push({ num: d.getDate(), dayName: DAY_ABBR[d.getDay()], isWedding: offset === 0 });
+  }
+  return result; // [0]=d+3 (top), [6]=d-3 (bottom)
+}
+
+function update() {
+  const p1       = document.getElementById('p1').value.toUpperCase();
+  const p2       = document.getElementById('p2').value.toUpperCase();
+  const guests   = document.getElementById('guests').value;
+  const day      = document.getElementById('day').value;
+  const month    = document.getElementById('month').value;
+  const monthCal = document.getElementById('monthCal').value;
+  const year     = document.getElementById('year').value;
+  const hour     = document.getElementById('hour').value;
+  const venue    = document.getElementById('venue').value;
+  const confirmBy= document.getElementById('confirmBy').value;
+  const ph1n     = document.getElementById('ph1n').value;
+  const ph1      = document.getElementById('ph1').value;
+  const ph2n     = document.getElementById('ph2n').value;
+  const ph2      = document.getElementById('ph2').value;
+
+  document.getElementById('back-p1').textContent    = p1;
+  document.getElementById('back-p2').textContent    = p2;
+  document.getElementById('back-guests').textContent = guests;
+  document.getElementById('back-date').textContent  = `w dniu ${day} ${month} ${year}`;
+  document.getElementById('back-time').textContent  = `o godzinie ${hour}`;
+  document.getElementById('back-venue').textContent = `w ogrodzie ${venue}`;
+  document.getElementById('back-confirmBy').textContent = confirmBy;
+  document.getElementById('back-ph1n').textContent = ph1n;
+  document.getElementById('back-ph1').textContent  = ph1;
+  document.getElementById('back-ph2n').textContent = ph2n;
+  document.getElementById('back-ph2').textContent  = ph2;
+
+  updateQR('qr1', document.getElementById('qr1url').value);
+  updateQR('qr2', document.getElementById('qr2url').value);
+
+  document.getElementById('cal-month').textContent = monthCal;
+
+  const week = computeWeek(day, month, year);
+  if (week) {
+    document.getElementById('d3').textContent  = week[0].num;
+    document.getElementById('dn3').textContent = week[0].dayName;
+    document.getElementById('d2').textContent  = week[1].num;
+    document.getElementById('dn2').textContent = week[1].dayName;
+    document.getElementById('d1').textContent  = week[2].num;
+    document.getElementById('dn1').textContent = week[2].dayName;
+    document.getElementById('d0').textContent  = week[3].num;
+    document.getElementById('d-1').textContent = week[4].num;
+    document.getElementById('dn-1').textContent = week[4].dayName;
+    document.getElementById('d-2').textContent = week[5].num;
+    document.getElementById('dn-2').textContent = week[5].dayName;
+    document.getElementById('d-3').textContent = week[6].num;
+    document.getElementById('dn-3').textContent = week[6].dayName;
+  } else {
+    const d = parseInt(day) || 17;
+    document.getElementById('d3').textContent  = d + 3;
+    document.getElementById('d2').textContent  = d + 2;
+    document.getElementById('d1').textContent  = d + 1;
+    document.getElementById('d0').textContent  = d;
+    document.getElementById('d-1').textContent = d - 1;
+    document.getElementById('d-2').textContent = d - 2;
+    document.getElementById('d-3').textContent = d - 3;
+  }
+}
+
+update();
+</script>
+</body>
+</html>
