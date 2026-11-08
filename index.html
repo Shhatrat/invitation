@@ -96,6 +96,21 @@ h1 {
   transition: background 0.2s;
 }
 .btn-print:hover { background: #d46e88; }
+.btn-reset {
+  grid-column: 1/-1;
+  padding: 10px 20px;
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #e0d8ea;
+  border-radius: 8px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  transition: all 0.2s;
+}
+.btn-reset:hover { color: #E8829A; border-color: #E8829A; }
 
 /* ── CARDS WRAPPER ── */
 .cards {
@@ -400,6 +415,7 @@ Babcię Zosię</textarea></div>
     <input id="qr2url" value="https://maps.google.com/?q=sala" oninput="update()"></div>
 
   <button class="btn-print" onclick="exportPrint()">Eksportuj do PDF (A5 + 3mm spad)</button>
+  <button class="btn-reset" onclick="resetLocal()">Resetuj dane</button>
 </div>
 
 <div id="print-stage" class="print-stage"></div>
@@ -505,6 +521,39 @@ function updateQR(id, url) {
   }
 }
 
+const FIELDS = ['p1','p2','guests','day','month','year','hour','venue',
+  'confirmBy','ph1n','ph1','ph2n','ph2','qr1url','qr2url'];
+const STORAGE_KEY = 'kartka-data-v1';
+
+function saveLocal() {
+  const data = {};
+  FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    FIELDS.forEach(id => {
+      if (data[id] !== undefined) {
+        const el = document.getElementById(id);
+        if (el) el.value = data[id];
+      }
+    });
+  } catch (e) {}
+}
+
+function resetLocal() {
+  if (!confirm('Przywrócić wartości domyślne?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
 const DAY_ABBR = ['niedz','pon','wt','śr','czw','pt','sob'];
 const MONTHS = {'stycznia':0,'lutego':1,'marca':2,'kwietnia':3,'maja':4,'czerwca':5,
   'lipca':6,'sierpnia':7,'września':8,'października':9,'listopada':10,'grudnia':11};
@@ -574,8 +623,11 @@ function update() {
     document.getElementById('d3').textContent  = week[6].num;
     document.getElementById('dn3').textContent = week[6].dayName;
   }
+
+  saveLocal();
 }
 
+loadLocal();
 update();
 
 const SLOTS = ['slot-tl', 'slot-tr', 'slot-bl', 'slot-br'];
