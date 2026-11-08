@@ -67,7 +67,7 @@ h1 {
   letter-spacing: 0.08em;
   font-weight: 400;
 }
-.field input {
+.field input, .field select {
   border: 1px solid #e0d8ea;
   border-radius: 7px;
   padding: 9px 13px;
@@ -78,7 +78,7 @@ h1 {
   transition: border-color 0.2s;
   background: #fdfaff;
 }
-.field input:focus { border-color: #E8829A; background: white; }
+.field input:focus, .field select:focus { border-color: #E8829A; background: white; }
 
 .btn-print {
   grid-column: 1/-1;
@@ -142,6 +142,17 @@ h1 {
   width: 78%;
   height: auto;
   z-index: 2;
+}
+.front-flowers {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 340px;
+  height: auto;
+  opacity: 0.9;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* ── FRONT CALENDAR (bottom) ── */
@@ -367,6 +378,7 @@ h1 {
     <div class="card-label">Przód</div>
     <div class="card card-front" id="front">
       <img src="bedzie_slub.svg" class="front-title" alt="Będzie ślub!">
+      <img src="front_flowers_delicate.png" class="front-flowers" alt="">
 
       <!-- Calendar at bottom -->
       <div class="cal-container">
